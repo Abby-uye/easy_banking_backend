@@ -3,7 +3,7 @@ const express = require("express");
 const app = express()
 
 const dbUrl =process.env.MONGO_URI
-const connect = require("./features/repository/connectToDb")
+const connect = require("./features/data/repository/connectToDb")
 const port = process.env.PORT
 
 const cors = require("cors");

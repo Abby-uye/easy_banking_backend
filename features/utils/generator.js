@@ -1,4 +1,4 @@
-const crypto = require('crypto');
-
-const jwtSecret = crypto.randomBytes(32).toString('hex');
-console.log(jwtSecret);
+const generateRandomNumber = () => {
+    return Math.floor(100000 + Math.random() * 900000);
+};
+module.exports = {generateRandomNumber}

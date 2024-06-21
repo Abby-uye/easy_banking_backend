@@ -2,6 +2,7 @@ const mongoose = require(`mongoose`);
 const {Schema} = mongoose
 const addressSchema = require('./userAddress');
 
+const {userStatus} = require("../../constants/userconstants");
 //user will later have a correct nin and bvn
 
 const validateEmail = (email)=>  {
@@ -9,13 +10,20 @@ const validateEmail = (email)=>  {
     return emailRegex.test(email);
 };
 
-const validatePassword = (password) =>{
+const validatePassword = (password) => {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return passwordRegex.test(password);
+    const result = passwordRegex.test(password);
+    console.log('Password:', password);
+    console.log('Validation result:', result);
+    return result;
 };
-
 const BankUserSchema = new Schema({
-    fullName:{
+    firstName:{
+        type:String,
+        require:true
+
+    },
+    lastName:{
         type:String,
         require:true
 
@@ -37,7 +45,20 @@ const BankUserSchema = new Schema({
 
     address: {
         type: addressSchema,
-        required: true
+    },
+    emailConfirmDigits:{
+        type:Number
+    },
+    registerResendCount:{
+        type:Number
+    },
+    status: {
+        type: String,
+        enum: Object.values(userStatus),
+        default: userStatus.NOT_AUTHENTICATED
+    },
+    expirationTime:{
+        type:Date
     }
 })
 
