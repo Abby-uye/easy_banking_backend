@@ -13,12 +13,15 @@ const registerBankUser = async(registrationRequest)=>{
    let expirationTime = Date.now() + 15 * 60 * 1000;
         const {firstName, lastName, email, password} = registrationRequest;
         const user = await bankUser.findOne({email});
-        const hashedPassword = await hashPassword(password)
+
         if (user) {
             throw new UserExistException("this email is already in use")
         }
     console.log('Received password:', password);
-
+        if(!validPassword(password)){
+            throw new Error("Password does not match criteria")
+        }
+    const hashedPassword = await hashPassword(password)
         const newBankUser = {
             firstName,
             lastName,
@@ -44,7 +47,13 @@ const registerBankUser = async(registrationRequest)=>{
 
 
 }
-
+const validPassword = (password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const result = passwordRegex.test(password);
+    console.log('Password:', password);
+    console.log('Validation result:', result);
+    return result;
+};
 const registerMailSender = (email,fullName,emailConfirmDigits)=>{
    let subject= 'Welcome to the Easy Banking!'
      let  text= `Hello ${fullName},\n\nWelcome to the Easy Banking! We are glad to have you on board.\n\nPlease enter this 6 digits to confirm your email ${emailConfirmDigits}\n\nBest Regards,\nEasy Banking team`
@@ -53,38 +62,44 @@ const registerMailSender = (email,fullName,emailConfirmDigits)=>{
 }
 
 
-const verify = async (req, res) => {
-    const { email, verificationCode } = req.body;
+const verify = async (verifyUserRequest, verifyUserResponse) => {
+    const { email, verificationCode } = verifyUserRequest.body;
 
-    try {
-        console.log("Starting verifiuser")
+
         const user = await bankUser.findOne({ email });
-        console.log(user.email)
 
 
         if (!user) {
-            return res.status(400).send('User not found');
+             verifyUserResponse.status(400).send('User not found');
         }
 
-        if (Date.now() > user.expirationTime) {
-            return res.status(400).send('Verification code has expired');
+
+        if (Date.now() > user.expirationTime.getTime()) {
+            console.log(user.expirationTime)
+             throw new UserException("verification code expired");
         }
+
+        console.log("Verification step reached");
+
 
         if (user.emailConfirmDigits === verificationCode) {
+            console.log("Verification code matches");
+
+
             user.status = userStatus.AUTHENTICATED;
 
-            // Save the updated user document
+
             await user.save();
 
-            return res.status(200).send('Registration complete');
+            return 'Registration complete';
         } else {
-            return res.status(400).send('Invalid verification code');  // Changed to 400 for a client error
+           throw new Error("Invalid verification code")
         }
-    } catch (error) {
-        console.error('Error verifying user:', error.message);
-        return res.status(500).send('Internal server error');
-    }
+
 };
+
+
+
 
 
 const resendCode = async (req, res) => {

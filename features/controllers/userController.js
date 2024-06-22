@@ -1,4 +1,5 @@
 const {registerBankUser,verify,resendCode} = require("../services/bankUserService")
+const UserException = require("../exception/UserException");
 
 
 const register = async(registerUserRequest,registerUserResponse) => {
@@ -14,16 +15,22 @@ const register = async(registerUserRequest,registerUserResponse) => {
     }
 }
 
-const verifyUser = async (verifyUserRequest,verifyUserResponse)=>{
-        try {
-            const verifyResponse = await verify(verifyUserRequest);
-            verifyUserResponse.json(verifyResponse)
+const verifyUser = async (verifyUserRequest, verifyUserResponse) => {
+    try {
+        const verifyResponse = await verify(verifyUserRequest);
+        verifyUserResponse.json(verifyResponse);
+    } catch (error) {
+        if (error instanceof UserException) {
+           return  verifyUserResponse.status(error.statusCode).json({ error: error.message });
         }
-        catch (error){
-            verifyUserResponse.status(500).json()
-            console.log(error, "internal server error")
+        else {
+            console.error(error, "internal server error");
+          return   verifyUserResponse.status(500).json();
+
+        }
     }
-}
+};
+
 
 const resendCodeToUser= async (resendCodeToUserRequest,resendCodeToUserResponse)=>{
     try {

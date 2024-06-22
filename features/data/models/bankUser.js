@@ -10,13 +10,7 @@ const validateEmail = (email)=>  {
     return emailRegex.test(email);
 };
 
-const validatePassword = (password) => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    const result = passwordRegex.test(password);
-    console.log('Password:', password);
-    console.log('Validation result:', result);
-    return result;
-};
+
 const BankUserSchema = new Schema({
     firstName:{
         type:String,
@@ -38,8 +32,7 @@ const BankUserSchema = new Schema({
     },
     password:{
         type:String,
-        require:true,
-        validate:[validatePassword,"Not a valid password! Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character`"]
+        require:true
 
     },
 
